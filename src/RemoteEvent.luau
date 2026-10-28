@@ -1,3 +1,4 @@
+local assertWrapper = require(script.Parent.util.assertWrapper)
 local fetchRemoteEvent = require(script.Parent.util.fetchRemoteEvent)
 local resolverType = require(script.Parent.util.resolverType)
 
@@ -23,7 +24,7 @@ export type Event<A...> = typeof(setmetatable(
 		OnServerEvent: PlayerSignal<A...>,
 		OnClientEvent: Signal<A...>,
 		remote: RemoteEvent,
-		_resolver: resolverType.Resolver,
+		_asserter: (any, ...any) -> ...any,
 		_args: (A...) -> A...,
 	},
 	Event
@@ -38,37 +39,22 @@ function Event.new<A...>(name: string, parent: Instance, resolver: resolverType.
 	self.OnClientEvent = remoteEvent.OnClientEvent
 
 	self.remote = remoteEvent
-	self._resolver = resolver
+	self._asserter = assertWrapper(resolver)
 	self._args = args
 
 	return self
 end
 
 function Event.FireServer<T, A...>(self: Event<A...>, ...: A...)
-	local ok, err = self._resolver(self._args, ...)
-	if not ok then
-		error(err)
-	end
-
-	self.remote:FireServer(...)
+	self.remote:FireServer(self._asserter(self._args, ...))
 end
 
 function Event.FireClient<T, A...>(self: Event<A...>, player: Player, ...: A...)
-	local ok, err = self._resolver(self._args, ...)
-	if not ok then
-		error(err)
-	end
-
-	self.remote:FireClient(player, ...)
+	self.remote:FireServer(player, self._asserter(self._args, ...))
 end
 
 function Event.FireAllClients<T, A...>(self: Event<A...>, ...: A...)
-	local ok, err = self._resolver(self._args, ...)
-	if not ok then
-		error(err)
-	end
-
-	self.remote:FireAllClients(...)
+	self.remote:FireAllClients(self._asserter(self._args, ...))
 end
 
 function Event.Destroy(self: Event<...any>)

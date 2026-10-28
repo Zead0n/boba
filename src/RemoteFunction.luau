@@ -1,6 +1,6 @@
+local assertWrapper = require(script.Parent.util.assertWrapper)
 local fetchRemoteFunction = require(script.Parent.util.fetchRemoteFunction)
 local resolverType = require(script.Parent.util.resolverType)
-local typeAssert = require(script.Parent.util.typeAssert)
 
 local Func = {}
 Func.__index = Func
@@ -8,9 +8,10 @@ Func.__index = Func
 export type Func<A..., R...> = typeof(setmetatable(
 	{} :: {
 		remote: RemoteFunction,
-		_resolver: resolverType.Resolver,
 		_args: (A...) -> ...any,
+		_asserter: (any, ...any) -> ...any,
 		_returns: (...any) -> R...,
+		_returnsAsserter: (...any) -> ...any,
 	},
 	Func
 ))
@@ -27,8 +28,8 @@ function Func.new<A..., R...>(
 	local self = setmetatable({}, Func) :: Func<A..., R...>
 
 	self.remote = remoteFunction
-	self._resolver = resolver
 	self._args = args
+	self._asserter = assertWrapper(resolver)
 	self._returns = returns
 
 	return self
@@ -43,21 +44,11 @@ function Func.SetClientInvoke<T, A..., R...>(self: Func<A..., R...>, onInvoke: (
 end
 
 function Func.InvokeServer<T, A..., R...>(self: Func<A..., R...>, ...: A...): R...
-	local ok, err = self._resolver(self._args, ...)
-	if not ok then
-		error(err, 2)
-	end
-
-	return typeAssert(self._resolver(self._returns, self.remote:InvokeServer(...)))
+	return self._asserter(self._returns, self.remote:InvokeClient(self._asserter(self._args, ...)))
 end
 
 function Func.InvokeClient<A..., R...>(self: Func<A..., R...>, player: Player, ...: A...): R...
-	local ok, err = self._resolver(self._args, ...)
-	if not ok then
-		error(err, 2)
-	end
-
-	return typeAssert(self._resolver(self._returns, self.remote:InvokeClient(player, ...)))
+	return self._asserter(self._returns, self.remote:InvokeClient(player, self._asserter(self._args, ...)))
 end
 
 function Func.Destroy(self: Func<(...any), (...any)>)
