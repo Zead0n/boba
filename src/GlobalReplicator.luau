@@ -30,11 +30,6 @@ function GlobalReplicator.new<T>(parent: Instance, name: string, initialData: T)
 	self.value = initialData
 
 	if RunService:IsServer() then
-		local playerAddedConn = Players.PlayerAdded:Connect(function(player)
-			self.value = initialData
-		end)
-		table.insert(self.conns, playerAddedConn)
-
 		local serverSyncConn = remote.OnServerEvent:Connect(function(player, sentValue)
 			remote:FireClient(player, self.value)
 		end)
