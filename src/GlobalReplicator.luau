@@ -20,6 +20,11 @@ export type GlobalReplicator<T> = typeof(setmetatable(
 	GlobalReplicator
 ))
 
+local function clientSet<T>(self: GlobalReplicator<T>, value: T)
+	self.value = value
+	self._clientSignal:Fire(value)
+end
+
 function GlobalReplicator.new<T>(parent: Instance, name: string, initialData: T): GlobalReplicator<T>
 	local remote = fetchRemoteEvent(parent, name)
 
@@ -80,7 +85,7 @@ function GlobalReplicator.prediction<T>(self: GlobalReplicator<T>, callback: (T)
 	return {
 		replicator = self :: any,
 		predict = function()
-			self:_clientSet(callback(self:get()))
+			clientSet(self, callback(self:get()))
 		end,
 	}
 end
@@ -96,12 +101,6 @@ function GlobalReplicator.Destroy<T>(self: GlobalReplicator<T>)
 	end
 
 	self.remote:Destroy()
-end
-
-function GlobalReplicator._clientSet<T>(self: GlobalReplicator<T>, value: T)
-	assert(RunService:IsClient(), "Replicator '_clientSet' method can only be run client-side")
-	self.value = value
-	self._clientSignal:Fire(value)
 end
 
 return GlobalReplicator

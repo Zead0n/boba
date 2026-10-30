@@ -21,6 +21,12 @@ export type LocalReplicator<T> = typeof(setmetatable(
 	LocalReplicator
 ))
 
+local function clientSet<T>(self: LocalReplicator<T>, value: T)
+	local localPlayer = Players.LocalPlayer
+	self.value[localPlayer] = value
+	self._clientSignal:Fire(value)
+end
+
 function LocalReplicator.new<T>(parent: Instance, name: string, initialData: T): LocalReplicator<T>
 	local remote = fetchRemoteEvent(parent, name)
 
@@ -120,7 +126,7 @@ function LocalReplicator.prediction<T>(self: LocalReplicator<T>, callback: (T) -
 	return {
 		replicator = self :: any,
 		predict = function()
-			self:_clientSet(callback(self:get()))
+			clientSet(self, callback(self:get()))
 		end,
 	}
 end
@@ -137,13 +143,6 @@ function LocalReplicator.Destroy<T>(self: LocalReplicator<T>)
 
 	self._clientSignal:Destroy()
 	self.remote:Destroy()
-end
-
-function LocalReplicator._clientSet<T>(self: LocalReplicator<T>, value: T)
-	assert(RunService:IsClient(), "Replicator '_clientSet' method can only be run client-side")
-	local localPlayer = Players.LocalPlayer
-	self.value[localPlayer] = value
-	self._clientSignal:Fire(value)
 end
 
 return LocalReplicator
