@@ -48,7 +48,7 @@ function Func.InvokeClient<C, A..., R...>(self: Func<C, A..., R...>, player: Pla
 	return self._asserter(self._returns, self.remote:InvokeClient(player, self._asserter(self._args, ...)))
 end
 
-function Func.PredictServerInvoker<C, A..., R...>(
+function Func.PredictionServerInvoker<C, A..., R...>(
 	self: Func<C, A..., R...>,
 	predictions: { Types.Prediction },
 	timeout: number?

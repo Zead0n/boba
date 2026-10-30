@@ -9,4 +9,10 @@ export type Prediction = {
 	predict: () -> (),
 }
 
+export type PatchConfig<C, T, P> = {
+	patchType: P?,
+	diff: (T, T) -> P,
+	apply: (T, P) -> T,
+}
+
 return {}
