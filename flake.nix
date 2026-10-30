@@ -20,6 +20,9 @@
     {
       devShells = mapSystems (
         { pkgs }:
+        let
+          wally-package-types = pkgs.callPackage ./nix/wally-package-types.nix { };
+        in
         with pkgs;
         {
           default = mkShell {
@@ -29,6 +32,7 @@
               stylua
               selene
               wally
+              wally-package-types
             ];
           };
         }
