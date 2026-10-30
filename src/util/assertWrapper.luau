@@ -1,6 +1,6 @@
-local resolverType = require(script.Parent.resolverType)
+local Types = require(script.Parent.Parent.Types)
 
-return function(resolver: resolverType.Resolver)
+return function<T>(resolver: Types.Resolver<T>)
 	return function(matcher: any, ...)
 		local ok, err = resolver(matcher, ...)
 		if not ok then
