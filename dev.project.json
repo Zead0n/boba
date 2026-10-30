@@ -1,0 +1,14 @@
+{
+  "name": "BobaDev",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Packages": {
+        "$path": "Packages",
+        "Boba": {
+          "$path": "src"
+        }
+      }
+    }
+  }
+}
