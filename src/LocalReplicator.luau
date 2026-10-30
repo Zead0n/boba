@@ -139,7 +139,11 @@ function LocalReplicator.sync<C, T, P>(self: LocalReplicator<C, T, P>, timeout: 
 	assert(RunService:IsClient(), "Replicator 'sync' method can only be run client-side")
 	self._syncPromise = Promise.fromEvent(self.remote.OnClientEvent, function(_, isPatch)
 		return not isPatch
-	end):timeout(timeout or 5, self:get())
+	end)
+		:andThen(function(value, _)
+			return value
+		end)
+		:timeout(timeout or 5, self:get())
 
 	self.remote:FireServer()
 	return self._syncPromise:expect()
