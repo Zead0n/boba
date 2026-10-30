@@ -1,6 +1,9 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
+local Promise = require(script.Parent.Parent.Promise)
+local Types = require(script.Parent.Types)
+local Signal = require(script.Parent.Parent.Signal)
 local fetchRemoteEvent = require(script.Parent.util.fetchRemoteEvent)
 
 local LocalReplicator = {}
@@ -10,7 +13,10 @@ export type LocalReplicator<T> = typeof(setmetatable(
 	{} :: {
 		remote: RemoteEvent,
 		value: { [Player]: T },
-		conns: { RBXScriptConnection },
+		conns: { Signal.Connection },
+		_clientSignal: Signal.Signal<T>,
+		_asserter: (any, ...any) -> ...any,
+		_syncPromise: any,
 	},
 	LocalReplicator
 ))
@@ -20,6 +26,7 @@ function LocalReplicator.new<T>(parent: Instance, name: string, initialData: T):
 
 	local self = setmetatable({}, LocalReplicator) :: LocalReplicator<T>
 	self.remote = remote
+	self._clientSignal = Signal.new()
 	self.conns = {}
 
 	if RunService:IsServer() then
@@ -34,15 +41,11 @@ function LocalReplicator.new<T>(parent: Instance, name: string, initialData: T):
 		end)
 		table.insert(self.conns, playerRemovedConn)
 
-		local serverSyncConn = remote.OnServerEvent:Connect(function(player, sentValue)
+		local serverSyncConn = remote.OnServerEvent:Connect(function(player)
 			local playerValue = self.value[player]
-			if playerValue == nil or playerValue == sentValue then
-				return
-			end
-
 			remote:FireClient(player, playerValue)
 		end)
-		table.insert(self.conns, serverSyncConn)
+		table.insert(self.conns, serverSyncConn :: any)
 
 		for _, player in Players:GetPlayers() do
 			self.value[player] = initialData
@@ -53,8 +56,9 @@ function LocalReplicator.new<T>(parent: Instance, name: string, initialData: T):
 
 		local clientSyncConn = remote.OnClientEvent:Connect(function(syncValue)
 			self.value[localPlayer] = syncValue
+			self._clientSignal:Fire(syncValue)
 		end)
-		table.insert(self.conns, clientSyncConn)
+		table.insert(self.conns, clientSyncConn :: any)
 
 		self:sync()
 	end
@@ -95,22 +99,51 @@ function LocalReplicator.setAll<T>(self: LocalReplicator<T>, newValue: T)
 	end
 end
 
-function LocalReplicator.sync<T>(self: LocalReplicator<T>)
+function LocalReplicator.sync<T>(self: LocalReplicator<T>): T
 	assert(RunService:IsClient(), "Replicator 'sync' method can only be run client-side")
-	self.remote:FireServer(self.value)
+	self._syncPromise = Promise.fromEvent(self.remote.OnClientEvent):timeout(5, self:get())
+	self.remote:FireServer()
+	return self._syncPromise:expect()
 end
 
-function LocalReplicator.observe<T>(self: LocalReplicator<T>, callback: (T) -> ...any): RBXScriptConnection
+function LocalReplicator.observe<T>(self: LocalReplicator<T>, callback: (T) -> ...any): Signal.Connection
 	assert(RunService:IsClient(), "Replicator 'observe' method can only be run client-side")
-	return self.remote.OnClientEvent:Connect(callback)
+	local conn = self._clientSignal:Connect(callback)
+	table.insert(self.conns, conn)
+
+	return conn
+end
+
+function LocalReplicator.prediction<T>(self: LocalReplicator<T>, callback: (T) -> T): Types.Prediction
+	assert(RunService:IsClient(), "Replicator 'prediction' method can only be run client-side")
+
+	return {
+		replicator = self :: any,
+		predict = function()
+			self:_clientSet(callback(self:get()))
+		end,
+	}
 end
 
 function LocalReplicator.Destroy<T>(self: LocalReplicator<T>)
+	if self._syncPromise then
+		self._syncPromise:cancel()
+		self._syncPromise = nil
+	end
+
 	for _, conn in self.conns do
 		conn:Disconnect()
 	end
 
+	self._clientSignal:Destroy()
 	self.remote:Destroy()
+end
+
+function LocalReplicator._clientSet<T>(self: LocalReplicator<T>, value: T)
+	assert(RunService:IsClient(), "Replicator '_clientSet' method can only be run client-side")
+	local localPlayer = Players.LocalPlayer
+	self.value[localPlayer] = value
+	self._clientSignal:Fire(value)
 end
 
 return LocalReplicator

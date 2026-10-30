@@ -1,6 +1,7 @@
 local assertWrapper = require(script.Parent.util.assertWrapper)
 local fetchRemoteEvent = require(script.Parent.util.fetchRemoteEvent)
-local resolverType = require(script.Parent.util.resolverType)
+local fetchUnreliableRemoteEvent = require(script.Parent.util.fetchUnreliableRemoteEvent)
+local Types = require(script.Parent.Types)
 
 type Signal<A...> = {
 	Connect: (self: Signal<A...>, fn: (A...) -> ()) -> RBXScriptConnection,
@@ -19,21 +20,30 @@ type PlayerSignal<A...> = {
 local Event = {}
 Event.__index = Event
 
-export type Event<A...> = typeof(setmetatable(
+export type Event<C, A...> = typeof(setmetatable(
 	{} :: {
 		OnServerEvent: PlayerSignal<A...>,
 		OnClientEvent: Signal<A...>,
 		remote: RemoteEvent,
-		_asserter: (any, ...any) -> ...any,
-		_args: (A...) -> A...,
+		_asserter: (C, ...any) -> ...any,
+		_args: C,
 	},
 	Event
 ))
 
-function Event.new<A...>(name: string, parent: Instance, resolver: resolverType.Resolver, args: (A...) -> A...): Event<A...>
-	local remoteEvent = fetchRemoteEvent(parent, name)
+function Event.new<C, A...>(
+	name: string,
+	parent: Instance,
+	resolver: Types.Resolver<C>,
+	args: C,
+	unreliable: boolean?
+): Event<C, A...>
+	local remoteInstance: Instance = if unreliable
+		then fetchUnreliableRemoteEvent(parent, name)
+		else fetchRemoteEvent(parent, name)
+	local remoteEvent: RemoteEvent = remoteInstance :: RemoteEvent
 
-	local self = setmetatable({}, Event) :: Event<A...>
+	local self = setmetatable({}, Event) :: Event<C, A...>
 
 	self.OnServerEvent = remoteEvent.OnServerEvent
 	self.OnClientEvent = remoteEvent.OnClientEvent
@@ -45,19 +55,19 @@ function Event.new<A...>(name: string, parent: Instance, resolver: resolverType.
 	return self
 end
 
-function Event.FireServer<T, A...>(self: Event<A...>, ...: A...)
+function Event.FireServer<C, A...>(self: Event<C, A...>, ...: A...)
 	self.remote:FireServer(self._asserter(self._args, ...))
 end
 
-function Event.FireClient<T, A...>(self: Event<A...>, player: Player, ...: A...)
+function Event.FireClient<C, A...>(self: Event<C, A...>, player: Player, ...: A...)
 	self.remote:FireServer(player, self._asserter(self._args, ...))
 end
 
-function Event.FireAllClients<T, A...>(self: Event<A...>, ...: A...)
+function Event.FireAllClients<C, A...>(self: Event<C, A...>, ...: A...)
 	self.remote:FireAllClients(self._asserter(self._args, ...))
 end
 
-function Event.Destroy(self: Event<...any>)
+function Event.Destroy<C, A...>(self: Event<C, A...>)
 	self.remote:Destroy()
 end
 
