@@ -64,9 +64,9 @@ function GlobalReplicator.set<T>(self: GlobalReplicator<T>, newValue: T)
 	self.remote:FireAllClients(newValue)
 end
 
-function GlobalReplicator.sync<T>(self: GlobalReplicator<T>)
+function GlobalReplicator.sync<T>(self: GlobalReplicator<T>, timeout: number?)
 	assert(RunService:IsClient(), "Replicator 'sync' method can only be run client-side")
-	self._syncPromise = Promise.fromEvent(self.remote.OnClientEvent):timeout(5, self:get())
+	self._syncPromise = Promise.fromEvent(self.remote.OnClientEvent):timeout(timeout or 5, self:get())
 	self.remote:FireServer()
 	return self._syncPromise:expect()
 end

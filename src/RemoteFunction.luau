@@ -48,7 +48,11 @@ function Func.InvokeClient<C, A..., R...>(self: Func<C, A..., R...>, player: Pla
 	return self._asserter(self._returns, self.remote:InvokeClient(player, self._asserter(self._args, ...)))
 end
 
-function Func.PredictServerInvoker<C, A..., R...>(self: Func<C, A..., R...>, predictions: { Types.Prediction }): (A...) -> R...
+function Func.PredictServerInvoker<C, A..., R...>(
+	self: Func<C, A..., R...>,
+	predictions: { Types.Prediction },
+	timeout: number?
+): (A...) -> R...
 	assert(RunService:IsClient(), "RemoteFunction `PredictServerInvoker` can only run client-side")
 
 	return function(...: any): ...any
@@ -61,7 +65,7 @@ function Func.PredictServerInvoker<C, A..., R...>(self: Func<C, A..., R...>, pre
 
 		self._predictPromise:andThen(function(replicators: { Types.SyncLike })
 			for _, replicator in replicators do
-				replicator:sync()
+				replicator:sync(timeout)
 			end
 		end)
 

@@ -99,9 +99,9 @@ function LocalReplicator.setAll<T>(self: LocalReplicator<T>, newValue: T)
 	end
 end
 
-function LocalReplicator.sync<T>(self: LocalReplicator<T>): T
+function LocalReplicator.sync<T>(self: LocalReplicator<T>, timeout: number?): T
 	assert(RunService:IsClient(), "Replicator 'sync' method can only be run client-side")
-	self._syncPromise = Promise.fromEvent(self.remote.OnClientEvent):timeout(5, self:get())
+	self._syncPromise = Promise.fromEvent(self.remote.OnClientEvent):timeout(timeout or 5, self:get())
 	self.remote:FireServer()
 	return self._syncPromise:expect()
 end
