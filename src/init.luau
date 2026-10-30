@@ -12,7 +12,7 @@ local GlobablReplicator = require(script.GlobalReplicator)
 local LocalReplicator = require(script.LocalReplicator)
 local castType = require(script.util.castType)
 
-export type ScopedReplicator<T> = LocalReplicator.LocalReplicator<T>
+export type PlayerReplicator<T> = LocalReplicator.LocalReplicator<T>
 export type GlobalReplicator<T> = GlobablReplicator.GlobalReplicator<T>
 
 local Boba = {}
@@ -31,8 +31,8 @@ function Boba.define<C>(config: {
 		remoteFunction = function(name: string)
 			return Boba.remoteFunction(name, config.parent, config.resolver)
 		end,
-		scopedReplicator = function<T>(name: string, data: T)
-			return Boba.scopedReplicator(name, config.parent, data)
+		playerReplicator = function<T>(name: string, data: T)
+			return Boba.playerReplicator(name, config.parent, data)
 		end,
 		globalReplicator = function<T>(name: string, data: T)
 			return Boba.globalReplicator(name, config.parent, data)
@@ -59,7 +59,7 @@ function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.
 	end
 end
 
-function Boba.scopedReplicator<T>(name: string, parent: Instance, initialData: T): LocalReplicator.LocalReplicator<T>
+function Boba.playerReplicator<T>(name: string, parent: Instance, initialData: T): LocalReplicator.LocalReplicator<T>
 	return LocalReplicator.new(parent, name, initialData)
 end
 
