@@ -3,6 +3,7 @@
 /*.rbxl.lock
 
 sourcemap.json
+Packages/
 
 .direnv/
 .envrc
