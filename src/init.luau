@@ -8,7 +8,7 @@ export type RemoteEvent<A...> = Event.Event<A...>
 export type RemoteFunction<T..., R...> = Func.Func<T..., R...>
 
 -- replicators
-local GlobablReplicator = require(script.GlobablReplicator)
+local GlobablReplicator = require(script.GlobalReplicator)
 local LocalReplicator = require(script.LocalReplicator)
 
 export type ScopedReplicator<T> = LocalReplicator.LocalReplicator<T>
