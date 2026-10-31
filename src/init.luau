@@ -38,21 +38,23 @@ function Tapioca.define<C>(parent: Instance, resolver: Types.Resolver<C>)
 end
 
 function Tapioca.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
-	return function<A...>(args: (A...) -> ...any): RemoteEvent<C, A...>
-		return Event.new(name, parent, resolver, castType(args), true)
+	return function<A...>(...: A...): RemoteEvent<C, A...>
+		return Event.new(name, parent, resolver, castType(...), true)
 	end
 end
 
 function Tapioca.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
-	return function<A...>(args: (A...) -> ...any): RemoteEvent<C, A...>
-		return Event.new(name, parent, resolver, castType(args), false)
+	return function<A...>(...: A...)
+		return Event.new(name, parent, resolver, castType(...), false)
 	end
 end
 
 function Tapioca.remoteFunction<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
-	return function<A..., R...>(args: (A...) -> ...any, ret: (...any) -> R...): RemoteFunction<C, A..., R...>
-		-- HACK: luau typesolver doesn't like this for some reason, returning `any`
-		return Func.new(name, parent, resolver, castType(args), castType(ret)) :: any
+	return function<A...>(...: A...)
+		local argsType = castType(...)
+		return function<R...>(...: R...)
+			return Func.new(name, parent, resolver, argsType, castType(...))
+		end
 	end
 end
 
