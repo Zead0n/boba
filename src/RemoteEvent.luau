@@ -49,7 +49,6 @@ function Event.new<C, A...>(
 	self.OnClientEvent = remoteEvent.OnClientEvent
 
 	self.remote = remoteEvent
-	-- self._asserter = assertWrapper(resolver)
 	self._args = assertWrapper(resolver, args)
 
 	return self

@@ -30,7 +30,6 @@ function Func.new<C, A..., R...>(
 	local self = setmetatable({}, Func) :: Func<C, A..., R...>
 
 	self.remote = remoteFunction
-	-- self._asserter = assertWrapper(resolver)
 	self._args = assertWrapper(resolver, args)
 	self._returns = assertWrapper(resolver, returns)
 
