@@ -12,8 +12,8 @@ local GlobablReplicator = require(script.GlobalReplicator)
 local LocalReplicator = require(script.LocalReplicator)
 local castType = require(script.util.castType)
 
-export type PlayerReplicator<T> = LocalReplicator.LocalReplicator<T>
-export type GlobalReplicator<T> = GlobablReplicator.GlobalReplicator<T>
+export type PlayerReplicator<C, T, P> = LocalReplicator.LocalReplicator<C, T, P>
+export type GlobalReplicator<C, T, P> = GlobablReplicator.GlobalReplicator<C, T, P>
 
 local Boba = {}
 
@@ -31,11 +31,11 @@ function Boba.define<C>(config: {
 		remoteFunction = function(name: string)
 			return Boba.remoteFunction(name, config.parent, config.resolver)
 		end,
-		playerReplicator = function<T>(name: string, data: T)
-			return Boba.playerReplicator(name, config.parent, data)
+		playerReplicator = function<T>(name: string)
+			return Boba.playerReplicator(name, config.parent, config.resolver)
 		end,
-		globalReplicator = function<T>(name: string, data: T)
-			return Boba.globalReplicator(name, config.parent, data)
+		globalReplicator = function<T>(name: string)
+			return Boba.globalReplicator(name, config.parent, config.resolver)
 		end,
 	}
 end
@@ -59,12 +59,16 @@ function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.
 	end
 end
 
-function Boba.playerReplicator<T>(name: string, parent: Instance, initialData: T): LocalReplicator.LocalReplicator<T>
-	return LocalReplicator.new(parent, name, initialData)
+function Boba.playerReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
+		return LocalReplicator.new(parent, name, initialValue)
+	end
 end
 
-function Boba.globalReplicator<T>(name: string, parent: Instance, initialData: T): GlobablReplicator.GlobalReplicator<T>
-	return GlobablReplicator.new(parent, name, initialData)
+function Boba.globalReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
+		return GlobablReplicator.new(parent, name, initialValue)
+	end
 end
 
 return Boba
