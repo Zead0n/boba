@@ -38,20 +38,31 @@ end
 
 function Boba.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...): RemoteEvent<C, A...>
-		return Event.new(name, parent, resolver, table.pack(...) :: any, true)
+		local argTypes = table.pack(...) :: any
+		argTypes.n = nil
+
+		return Event.new(name, parent, resolver, argTypes, true)
 	end
 end
 
 function Boba.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...)
-		return Event.new(name, parent, resolver, table.pack(...) :: any, false)
+		local argTypes = table.pack(...) :: any
+		argTypes.n = nil
+
+		return Event.new(name, parent, resolver, argTypes, false)
 	end
 end
 
 function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...)
 		local argTypes = table.pack(...) :: any
+		argTypes.n = nil
+
 		return function<R...>(...: R...)
+			local returnTypes = table.pack(...) :: any
+			returnTypes.n = nil
+
 			return Func.new(name, parent, resolver, argTypes, table.pack(...) :: any)
 		end
 	end
