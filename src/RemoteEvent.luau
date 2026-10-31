@@ -25,8 +25,8 @@ export type Event<C, A...> = typeof(setmetatable(
 		OnServerEvent: PlayerSignal<A...>,
 		OnClientEvent: Signal<A...>,
 		remote: RemoteEvent,
-		_asserter: (C, ...any) -> ...any,
-		_args: C,
+		-- _asserter: ({ C }, ...any) -> ...any,
+		_args: (...any) -> ...any,
 	},
 	Event
 ))
@@ -35,7 +35,7 @@ function Event.new<C, A...>(
 	name: string,
 	parent: Instance,
 	resolver: Types.Resolver<C>,
-	args: C,
+	args: { C },
 	unreliable: boolean?
 ): Event<C, A...>
 	local remoteInstance: Instance = if unreliable
@@ -49,22 +49,22 @@ function Event.new<C, A...>(
 	self.OnClientEvent = remoteEvent.OnClientEvent
 
 	self.remote = remoteEvent
-	self._asserter = assertWrapper(resolver)
-	self._args = args
+	-- self._asserter = assertWrapper(resolver)
+	self._args = assertWrapper(resolver, args)
 
 	return self
 end
 
 function Event.FireServer<C, A...>(self: Event<C, A...>, ...: A...)
-	self.remote:FireServer(self._asserter(self._args, ...))
+	self.remote:FireServer(self._args(...))
 end
 
 function Event.FireClient<C, A...>(self: Event<C, A...>, player: Player, ...: A...)
-	self.remote:FireServer(player, self._asserter(self._args, ...))
+	self.remote:FireServer(player, self._args(...))
 end
 
 function Event.FireAllClients<C, A...>(self: Event<C, A...>, ...: A...)
-	self.remote:FireAllClients(self._asserter(self._args, ...))
+	self.remote:FireAllClients(self._args(...))
 end
 
 function Event.Destroy<C, A...>(self: Event<C, A...>)

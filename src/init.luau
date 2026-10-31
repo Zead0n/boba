@@ -39,34 +39,34 @@ end
 
 function Boba.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...): RemoteEvent<C, A...>
-		return Event.new(name, parent, resolver, castType(...), true)
+		return Event.new(name, parent, resolver, table.pack(...) :: any, true)
 	end
 end
 
 function Boba.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...)
-		return Event.new(name, parent, resolver, castType(...), false)
+		return Event.new(name, parent, resolver, table.pack(...) :: any, false)
 	end
 end
 
 function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...)
-		local argsType = castType(...)
+		local argTypes = table.pack(...) :: any
 		return function<R...>(...: R...)
-			return Func.new(name, parent, resolver, argsType, castType(...))
+			return Func.new(name, parent, resolver, argTypes, table.pack(...) :: any)
 		end
 	end
 end
 
 function Boba.playerReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
-	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
-		return LocalReplicator.new(parent, name, initialValue)
+	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>?)
+		return LocalReplicator.new(parent, name, initialValue, patchConfig)
 	end
 end
 
 function Boba.globalReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
-	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
-		return GlobablReplicator.new(parent, name, initialValue)
+	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>?)
+		return GlobablReplicator.new(parent, name, initialValue, patchConfig)
 	end
 end
 

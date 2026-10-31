@@ -1,8 +1,14 @@
 local Types = require(script.Parent.Parent.Types)
 
-local function assertArgsWrapper<T>(resolver: Types.Resolver<T>)
-	return function(argMatchers: { T }, ...: any)
+return function<T>(resolver: Types.Resolver<T>, argMatchers: { T })
+	local expectedArgCount = #argMatchers
+
+	return function(...: any)
 		local args = table.pack(...)
+
+		if args.n > expectedArgCount then
+			error("Too many arguments", 4)
+		end
 
 		for idx = 1, args.n do
 			local argMatcher = argMatchers[idx]
@@ -21,13 +27,13 @@ local function assertArgsWrapper<T>(resolver: Types.Resolver<T>)
 	end
 end
 
-return function<T>(resolver: Types.Resolver<T>)
-	return function(matcher: any, ...)
-		local ok, err = resolver(matcher, ...)
-		if not ok then
-			error(err or "unknown resolve", 4)
-		end
-
-		return ...
-	end
-end
+-- return function<T>(resolver: Types.Resolver<T>)
+-- 	return function(matcher: any, ...)
+-- 		local ok, err = resolver(matcher, ...)
+-- 		if not ok then
+-- 			error(err or "unknown resolve", 4)
+-- 		end
+--
+-- 		return ...
+-- 	end
+-- end

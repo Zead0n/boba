@@ -11,23 +11,28 @@ Func.__index = Func
 export type Func<C, A..., R...> = typeof(setmetatable(
 	{} :: {
 		remote: RemoteFunction,
-		_asserter: (C, ...any) -> ...any,
-		_args: C,
-		_returns: C,
+		_args: (...any) -> ...any,
+		_returns: (...any) -> ...any,
 		_predictPromise: any,
 	},
 	Func
 ))
 
-function Func.new<C, A..., R...>(name: string, parent: Instance, resolver: Types.Resolver<C>, args: C, returns: C): Func<C, A..., R...>
+function Func.new<C, A..., R...>(
+	name: string,
+	parent: Instance,
+	resolver: Types.Resolver<C>,
+	args: { C },
+	returns: { C }
+): Func<C, A..., R...>
 	local remoteFunction = fetchRemoteFunction(parent, name)
 
 	local self = setmetatable({}, Func) :: Func<C, A..., R...>
 
 	self.remote = remoteFunction
-	self._asserter = assertWrapper(resolver)
-	self._args = args
-	self._returns = returns
+	-- self._asserter = assertWrapper(resolver)
+	self._args = assertWrapper(resolver, args)
+	self._returns = assertWrapper(resolver, returns)
 
 	return self
 end
@@ -41,11 +46,11 @@ function Func.SetClientInvoke<C, A..., R...>(self: Func<C, A..., R...>, onInvoke
 end
 
 function Func.InvokeServer<C, A..., R...>(self: Func<C, A..., R...>, ...: A...): R...
-	return self._asserter(self._returns, self.remote:InvokeClient(self._asserter(self._args, ...)))
+	return self._returns(self.remote:InvokeServer(self._args(...)))
 end
 
 function Func.InvokeClient<C, A..., R...>(self: Func<C, A..., R...>, player: Player, ...: A...): R...
-	return self._asserter(self._returns, self.remote:InvokeClient(player, self._asserter(self._args, ...)))
+	return self._returns(self.remote:InvokeClient(player, self._args(...)))
 end
 
 function Func.PredictionServerInvoker<C, A..., R...>(
@@ -62,7 +67,7 @@ function Func.PredictionServerInvoker<C, A..., R...>(
 			return prediction.replicator
 		end)
 
-		local outputs = table.pack((self :: Func<C, ...any, R...>):InvokeServer(...))
+		local outputs = table.pack((self :: any):InvokeServer(...))
 
 		self._predictPromise:andThen(function(replicators: { Types.SyncLike })
 			for _, replicator in replicators do
