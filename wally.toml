@@ -1,5 +1,5 @@
 [package]
-name = "zeadon/tapioca"
+name = "zeadon/boba"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"

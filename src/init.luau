@@ -15,41 +15,41 @@ local castType = require(script.util.castType)
 export type PlayerReplicator<C, T, P> = LocalReplicator.LocalReplicator<C, T, P>
 export type GlobalReplicator<C, T, P> = GlobablReplicator.GlobalReplicator<C, T, P>
 
-local Tapioca = {}
+local Boba = {}
 
-function Tapioca.define<C>(parent: Instance, resolver: Types.Resolver<C>)
+function Boba.define<C>(parent: Instance, resolver: Types.Resolver<C>)
 	return {
 		unreliableRemoteEvent = function(name: string)
-			return Tapioca.unreliableRemoteEvent(name, parent, resolver)
+			return Boba.unreliableRemoteEvent(name, parent, resolver)
 		end,
 		remoteEvent = function(name: string)
-			return Tapioca.remoteEvent(name, parent, resolver)
+			return Boba.remoteEvent(name, parent, resolver)
 		end,
 		remoteFunction = function(name: string)
-			return Tapioca.remoteFunction(name, parent, resolver)
+			return Boba.remoteFunction(name, parent, resolver)
 		end,
 		playerReplicator = function<T>(name: string)
-			return Tapioca.playerReplicator(name, parent, resolver)
+			return Boba.playerReplicator(name, parent, resolver)
 		end,
 		globalReplicator = function<T>(name: string)
-			return Tapioca.globalReplicator(name, parent, resolver)
+			return Boba.globalReplicator(name, parent, resolver)
 		end,
 	}
 end
 
-function Tapioca.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Boba.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...): RemoteEvent<C, A...>
 		return Event.new(name, parent, resolver, castType(...), true)
 	end
 end
 
-function Tapioca.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Boba.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...)
 		return Event.new(name, parent, resolver, castType(...), false)
 	end
 end
 
-function Tapioca.remoteFunction<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(...: A...)
 		local argsType = castType(...)
 		return function<R...>(...: R...)
@@ -58,16 +58,16 @@ function Tapioca.remoteFunction<C>(name: string, parent: Instance, resolver: Typ
 	end
 end
 
-function Tapioca.playerReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Boba.playerReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
 		return LocalReplicator.new(parent, name, initialValue)
 	end
 end
 
-function Tapioca.globalReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Boba.globalReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
 		return GlobablReplicator.new(parent, name, initialValue)
 	end
 end
 
-return Tapioca
+return Boba

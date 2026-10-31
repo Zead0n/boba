@@ -1,11 +1,11 @@
 {
-  "name": "TapiocaDev",
+  "name": "BobaDev",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
       "Packages": {
         "$path": "Packages",
-        "Tapioca": {
+        "Boba": {
           "$path": "src"
         }
       }
