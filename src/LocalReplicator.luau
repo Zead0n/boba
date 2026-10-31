@@ -94,7 +94,7 @@ end
 
 function LocalReplicator.get<C, T, P>(self: LocalReplicator<C, T, P>, player: Player?): any
 	if RunService:IsServer() then
-		assert(player, "Replicator 'get' method requires a 'player' parameter on server-side")
+		assert(player, "Replicator 'get' method requires a 'player' argument server-side")
 		return self.value[player]
 	else
 		if player ~= nil then
