@@ -1,8 +1,7 @@
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local castType = require(ReplicatedStorage.Packages.Boba.util.castType)
+local castType = require(script.Parent.util.castType)
 local Promise = require(script.Parent.Parent.Promise)
 local Types = require(script.Parent.Types)
 local Signal = require(script.Parent.Parent.Signal)

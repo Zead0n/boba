@@ -15,57 +15,57 @@ local castType = require(script.util.castType)
 export type PlayerReplicator<C, T, P> = LocalReplicator.LocalReplicator<C, T, P>
 export type GlobalReplicator<C, T, P> = GlobablReplicator.GlobalReplicator<C, T, P>
 
-local Boba = {}
+local Tapioca = {}
 
-function Boba.define<C>(parent: Instance, resolver: Types.Resolver<C>)
+function Tapioca.define<C>(parent: Instance, resolver: Types.Resolver<C>)
 	return {
 		unreliableRemoteEvent = function(name: string)
-			return Boba.unreliableRemoteEvent(name, parent, resolver)
+			return Tapioca.unreliableRemoteEvent(name, parent, resolver)
 		end,
 		remoteEvent = function(name: string)
-			return Boba.remoteEvent(name, parent, resolver)
+			return Tapioca.remoteEvent(name, parent, resolver)
 		end,
 		remoteFunction = function(name: string)
-			return Boba.remoteFunction(name, parent, resolver)
+			return Tapioca.remoteFunction(name, parent, resolver)
 		end,
 		playerReplicator = function<T>(name: string)
-			return Boba.playerReplicator(name, parent, resolver)
+			return Tapioca.playerReplicator(name, parent, resolver)
 		end,
 		globalReplicator = function<T>(name: string)
-			return Boba.globalReplicator(name, parent, resolver)
+			return Tapioca.globalReplicator(name, parent, resolver)
 		end,
 	}
 end
 
-function Boba.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Tapioca.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(args: (A...) -> ...any): RemoteEvent<C, A...>
 		return Event.new(name, parent, resolver, castType(args), true)
 	end
 end
 
-function Boba.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Tapioca.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(args: (A...) -> ...any): RemoteEvent<C, A...>
 		return Event.new(name, parent, resolver, castType(args), false)
 	end
 end
 
-function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Tapioca.remoteFunction<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A..., R...>(args: (A...) -> ...any, ret: (...any) -> R...): RemoteFunction<C, A..., R...>
 		-- HACK: luau typesolver doesn't like this for some reason, returning `any`
 		return Func.new(name, parent, resolver, castType(args), castType(ret)) :: any
 	end
 end
 
-function Boba.playerReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Tapioca.playerReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
 		return LocalReplicator.new(parent, name, initialValue)
 	end
 end
 
-function Boba.globalReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
+function Tapioca.globalReplicator<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<T, P>(dataType: T, initialValue: T, patchConfig: Types.PatchConfig<C, T, P>)
 		return GlobablReplicator.new(parent, name, initialValue)
 	end
 end
 
-return Boba
+return Tapioca
