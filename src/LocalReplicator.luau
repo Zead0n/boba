@@ -41,7 +41,7 @@ function LocalReplicator.new<C, T, P>(
 	parent: Instance,
 	name: string,
 	initialData: T,
-	patchConfig: Types.PatchConfig<C, T, P>
+	patchConfig: Types.PatchConfig<C, T, P>?
 ): LocalReplicator<C, T, P>
 	local remote = fetchRemoteEvent(parent, name)
 
@@ -49,9 +49,11 @@ function LocalReplicator.new<C, T, P>(
 	self.remote = remote
 	self._clientSignal = Signal.new()
 
-	self._patch = castType(patchConfig.patchType)
-	self._patchApplyer = patchConfig.apply
-	self._patchDiffer = patchConfig.diff
+	if patchConfig then
+		self._patch = castType(patchConfig.patchType)
+		self._patchApplyer = patchConfig.apply
+		self._patchDiffer = patchConfig.diff
+	end
 
 	self.conns = {}
 
@@ -107,29 +109,50 @@ end
 
 function LocalReplicator.getAll<C, T, P>(self: LocalReplicator<C, T, P>): { [Player]: T }
 	assert(RunService:IsServer(), "Replicator 'getAll' method can only be run server-side")
+
 	return self.value
 end
 
 function LocalReplicator.set<C, T, P>(self: LocalReplicator<C, T, P>, player: Player, newValue: T)
 	assert(RunService:IsServer(), "Replicator 'set' method can only be run server-side")
+
 	self.value[player] = newValue
 	self.remote:FireClient(player, newValue, false)
 end
 
+function LocalReplicator.setPatch<C, T, P>(self: LocalReplicator<C, T, P>, player: Player, newValue: T)
+	assert(RunService:IsServer(), "Replicator 'setPatch' method can only be run server-side")
+
+	local oldValue = assert(self:get(player), "Replicator holds no value, cannot run a patch")
+	self:patch(player, assert(self._patchDiffer, "Replicator does not support patches")(oldValue, newValue))
+end
+
 function LocalReplicator.patch<C, T, P>(self: LocalReplicator<C, T, P>, player: Player, patch: P)
+	assert(RunService:IsServer(), "Replicator 'patch' method can only be run server-side")
+
 	self.value[player] = assert(self._patchApplyer, "Replicator does not support patches")(self:get(player), patch)
 	self.remote:FireClient(player, patch, true)
 end
 
 function LocalReplicator.setAll<C, T, P>(self: LocalReplicator<C, T, P>, newValue: T)
 	assert(RunService:IsServer(), "Replicator 'setAll' method can only be run server-side")
+
 	for _, player in Players:GetPlayers() do
 		self:set(player, newValue)
 	end
 end
 
+function LocalReplicator.setPatchAll<C, T, P>(self: LocalReplicator<C, T, P>, newValue: T)
+	assert(RunService:IsServer(), "Replicator 'setPatchAll' method can only be run server-side")
+
+	for _, player in Players:GetPlayers() do
+		self:setPatch(player, newValue)
+	end
+end
+
 function LocalReplicator.patchAll<C, T, P>(self: LocalReplicator<C, T, P>, patch: P)
 	assert(RunService:IsServer(), "Replicator 'setAll' method can only be run server-side")
+
 	for _, player in Players:GetPlayers() do
 		self:patch(player, patch)
 	end
@@ -137,6 +160,7 @@ end
 
 function LocalReplicator.sync<C, T, P>(self: LocalReplicator<C, T, P>, timeout: number?): T
 	assert(RunService:IsClient(), "Replicator 'sync' method can only be run client-side")
+
 	self._syncPromise = Promise.fromEvent(self.remote.OnClientEvent, function(_, isPatch)
 		return not isPatch
 	end)

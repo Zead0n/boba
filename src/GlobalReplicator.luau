@@ -37,16 +37,18 @@ function GlobalReplicator.new<C, T, P>(
 	parent: Instance,
 	name: string,
 	initialData: T,
-	patchConfig: Types.PatchConfig<C, T, P>
+	patchConfig: Types.PatchConfig<C, T, P>?
 ): GlobalReplicator<C, T, P>
 	local remote = fetchRemoteEvent(parent, name)
 
 	local self = setmetatable({}, GlobalReplicator) :: GlobalReplicator<C, T, P>
 	self.remote = remote
 
-	self._patch = castType(patchConfig.patchType)
-	self._patchApplyer = patchConfig.apply
-	self._patchDiffer = patchConfig.diff
+	if patchConfig then
+		self._patch = castType(patchConfig.patchType)
+		self._patchApplyer = patchConfig.apply
+		self._patchDiffer = patchConfig.diff
+	end
 
 	self.conns = {}
 
@@ -79,6 +81,13 @@ function GlobalReplicator.set<C, T, P>(self: GlobalReplicator<C, T, P>, newValue
 	assert(RunService:IsServer(), "Replicator 'set' method can only be run server-side")
 	self.value = newValue
 	self.remote:FireAllClients(newValue, false)
+end
+
+function GlobalReplicator.setPatch<C, T, P>(self: GlobalReplicator<C, T, P>, player: Player, newValue: T)
+	assert(RunService:IsServer(), "Replicator 'setPatch' method can only be run server-side")
+
+	local oldValue = assert(self:get(), "Replicator holds no value, cannot run a patch")
+	self:patch(assert(self._patchDiffer, "Replicator does not support patches")(oldValue, newValue))
 end
 
 function GlobalReplicator.patch<C, T, P>(self: GlobalReplicator<C, T, P>, patch: P)
