@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local castType = require(script.Parent.util.castType)
 local Promise = require(script.Parent.Parent.Promise)
 local Types = require(script.Parent.Types)
 local Signal = require(script.Parent.Parent.Signal)
@@ -49,7 +48,7 @@ function LocalReplicator.new<C, T, P>(
 	self._clientSignal = Signal.new()
 
 	if patchConfig then
-		self._patch = castType(patchConfig.patchType)
+		self._patch = patchConfig.patchType
 		self._patchApplyer = patchConfig.apply
 		self._patchDiffer = patchConfig.diff
 	end

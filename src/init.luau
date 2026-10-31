@@ -10,7 +10,6 @@ export type RemoteFunction<C, T..., R...> = Func.Func<C, T..., R...>
 -- replicators
 local GlobablReplicator = require(script.GlobalReplicator)
 local LocalReplicator = require(script.LocalReplicator)
-local castType = require(script.util.castType)
 
 export type PlayerReplicator<C, T, P> = LocalReplicator.LocalReplicator<C, T, P>
 export type GlobalReplicator<C, T, P> = GlobablReplicator.GlobalReplicator<C, T, P>

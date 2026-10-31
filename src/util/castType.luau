@@ -1,3 +1,0 @@
-return function<T>(...): T
-	return ...
-end

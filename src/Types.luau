@@ -10,7 +10,7 @@ export type Prediction = {
 }
 
 export type PatchConfig<C, T, P> = {
-	patchType: P?,
+	patchType: C?,
 	diff: (T, T) -> P,
 	apply: (T, P) -> T,
 }
