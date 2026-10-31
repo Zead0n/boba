@@ -17,25 +17,22 @@ export type GlobalReplicator<C, T, P> = GlobablReplicator.GlobalReplicator<C, T,
 
 local Boba = {}
 
-function Boba.define<C>(config: {
-	parent: Instance,
-	resolver: Types.Resolver<C>,
-})
+function Boba.define<C>(parent: Instance, resolver: Types.Resolver<C>)
 	return {
 		unreliableRemoteEvent = function(name: string)
-			return Boba.unreliableRemoteEvent(name, config.parent, config.resolver)
+			return Boba.unreliableRemoteEvent(name, parent, resolver)
 		end,
 		remoteEvent = function(name: string)
-			return Boba.remoteEvent(name, config.parent, config.resolver)
+			return Boba.remoteEvent(name, parent, resolver)
 		end,
 		remoteFunction = function(name: string)
-			return Boba.remoteFunction(name, config.parent, config.resolver)
+			return Boba.remoteFunction(name, parent, resolver)
 		end,
 		playerReplicator = function<T>(name: string)
-			return Boba.playerReplicator(name, config.parent, config.resolver)
+			return Boba.playerReplicator(name, parent, resolver)
 		end,
 		globalReplicator = function<T>(name: string)
-			return Boba.globalReplicator(name, config.parent, config.resolver)
+			return Boba.globalReplicator(name, parent, resolver)
 		end,
 	}
 end
@@ -48,7 +45,7 @@ end
 
 function Boba.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
 	return function<A...>(args: (A...) -> ...any): RemoteEvent<C, A...>
-		return Event.new(name, parent, resolver, castType(args))
+		return Event.new(name, parent, resolver, castType(args), false)
 	end
 end
 

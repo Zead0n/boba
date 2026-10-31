@@ -55,13 +55,14 @@ function Func.PredictionServerInvoker<C, A..., R...>(
 ): (A...) -> R...
 	assert(RunService:IsClient(), "RemoteFunction `PredictServerInvoker` can only run client-side")
 
+	-- HACK: luau typesolver REALLY doesn't like these, have to spam 'any' type
 	return function(...: any): ...any
 		self._predictPromise = Promise.each(predictions, function(prediction: Types.Prediction)
 			prediction.predict()
 			return prediction.replicator
 		end)
 
-		local outputs = table.pack((self :: Func<C, (any), R...>):InvokeServer(...))
+		local outputs = table.pack((self :: Func<C, ...any, R...>):InvokeServer(...))
 
 		self._predictPromise:andThen(function(replicators: { Types.SyncLike })
 			for _, replicator in replicators do
