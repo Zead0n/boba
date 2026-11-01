@@ -8,7 +8,7 @@ local fetchRemoteFunction = require(script.Parent.util.fetchRemoteFunction)
 local Func = {}
 Func.__index = Func
 
-export type Func<C, A..., R...> = typeof(setmetatable(
+type Func<C, A..., R...> = typeof(setmetatable(
 	{} :: {
 		remote: RemoteFunction,
 		_args: (...any) -> ...any,
@@ -17,6 +17,20 @@ export type Func<C, A..., R...> = typeof(setmetatable(
 	},
 	Func
 ))
+
+-- HACK: luau typesolver can't figure out multiple generic packs in a table with a metatable, this will have to do
+export type PseudoFunc<C, T..., R...> = {
+	remote: RemoteFunction,
+	_args: (...any) -> ...any,
+	_returns: (...any) -> ...any,
+	_predictPromise: any,
+	SetServerInvoke: (Func<C, T..., R...>, (Player, T...) -> R...) -> (),
+	SetClientInvoke: (Func<C, T..., R...>, (T...) -> R...) -> (),
+	InvokeServer: (Func<C, T..., R...>, T...) -> R...,
+	InvokeClient: (Func<C, T..., R...>, Player, T...) -> R...,
+	PredictionServerInvoker: (Func<C, T..., R...>, { Types.Prediction }, number?) -> (T...) -> R...,
+	Destroy: (Func<C, T..., R...>) -> (),
+}
 
 function Func.new<C, A..., R...>(
 	name: string,

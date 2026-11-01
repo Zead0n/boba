@@ -25,7 +25,6 @@ export type Event<C, A...> = typeof(setmetatable(
 		OnServerEvent: PlayerSignal<A...>,
 		OnClientEvent: Signal<A...>,
 		remote: RemoteEvent,
-		-- _asserter: ({ C }, ...any) -> ...any,
 		_args: (...any) -> ...any,
 	},
 	Event

@@ -5,7 +5,7 @@ local Event = require(script.RemoteEvent)
 local Func = require(script.RemoteFunction)
 
 export type RemoteEvent<C, A...> = Event.Event<C, A...>
-export type RemoteFunction<C, T..., R...> = Func.Func<C, T..., R...>
+export type RemoteFunction<C, T..., R...> = Func.PseudoFunc<C, T..., R...>
 
 -- replicators
 local GlobablReplicator = require(script.GlobalReplicator)
@@ -48,7 +48,7 @@ function Boba.unreliableRemoteEvent<C>(name: string, parent: Instance, resolver:
 end
 
 function Boba.remoteEvent<C>(name: string, parent: Instance, resolver: Types.Resolver<C>)
-	return function<A...>(...: A...)
+	return function<A...>(...: A...): RemoteEvent<C, A...>
 		local argTypes = table.pack(...) :: any
 		argTypes.n = nil
 
@@ -61,11 +61,11 @@ function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.
 		local argTypes = table.pack(...) :: any
 		argTypes.n = nil
 
-		return function<R...>(...: R...)
+		return function<R...>(...: R...): RemoteFunction<C, A..., R...>
 			local returnTypes = table.pack(...) :: any
 			returnTypes.n = nil
 
-			return Func.new(name, parent, resolver, argTypes, table.pack(...) :: any)
+			return Func.new(name, parent, resolver, argTypes, table.pack(...) :: any) :: any
 		end
 	end
 end
@@ -81,5 +81,12 @@ function Boba.globalReplicator<C>(name: string, parent: Instance, resolver: Type
 		return GlobablReplicator.new(parent, name, initialValue, patchConfig)
 	end
 end
+
+local net = Boba.define(script, function(any: any)
+	return true
+end)
+
+local testEvent = net.remoteEvent("TestEvent")(45, "str")
+local testFunc = net.remoteFunction("TestFunc")(54, "str")(true)
 
 return Boba
