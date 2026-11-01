@@ -65,7 +65,7 @@ function Boba.remoteFunction<C>(name: string, parent: Instance, resolver: Types.
 			local returnTypes = table.pack(...) :: any
 			returnTypes.n = nil
 
-			return Func.new(name, parent, resolver, argTypes, table.pack(...) :: any) :: any
+			return Func.new(name, parent, resolver, argTypes, returnTypes) :: any
 		end
 	end
 end
