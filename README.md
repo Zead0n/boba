@@ -145,6 +145,34 @@ CurrencyNetwork.bankTotalMoneyReplicator:observe(function(newAmount)
     bankMoneyLabel = "Global Bank: $" .. tostring(newAmount)
 end)
 ```
+### Predictions
+```luau
+-- src/client/ShopClient.client.luau
+local ShopNetwork = require(path.to.shared.ShopNetwork)
+local CurrencyNetwork = require(path.to.shared.CurrencyNetwork)
+local Players = game:GetService("Players")
+
+local playerGui = Players.LocalPlayer.PlayerGui
+
+local buyButton = playerGui.to.BuyButton :: TextButton
+local buyItem = playerGui.to.BuyItem :: TextLabel
+local buyQuantity = playerGui.to.BuyQuantity :: TextLabel
+buyButton.Activated:Connect(function()
+    local price = 0
+    -- Logic to get price
+    local buyPredictionServerInvoke = ShopNetwork.buyItemFunc:PredictionServerInvoker({
+        CurrencyNetwork.playerMoneyReplicator:predictUpdate(function(money)
+            return money - price
+        end)
+    })
+
+    local buySuccess, reason = buyPredictionServerInvoke(buyItem.Text, tonumber(buyQuantity.Text))
+    if not buySucess then
+        print(reason)
+    end
+end)
+
+```
 ## Limitations
 - Remotes does not support vararg (`...: T`) as some typecheckers supports it while some don't. Your best bet (and probably better practice) is passing an array of a type at the end. i.e
 ```luau
