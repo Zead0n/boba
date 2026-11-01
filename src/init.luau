@@ -14,6 +14,8 @@ local LocalReplicator = require(script.LocalReplicator)
 export type PlayerReplicator<C, T, P> = LocalReplicator.LocalReplicator<C, T, P>
 export type GlobalReplicator<C, T, P> = GlobablReplicator.GlobalReplicator<C, T, P>
 
+export type PatchConfig<C, T, P> = Types.PatchConfig<C, T, P>
+
 local Boba = {}
 
 function Boba.define<C>(parent: Instance, resolver: Types.Resolver<C>)
