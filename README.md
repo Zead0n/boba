@@ -1,5 +1,5 @@
 > [!CAUTION]
-> This is experimental and has not been tested. Discouraged from any form of use.
+> This is experimental and simply proof-of-concept, has not been tested. Discouraged from any form of use.
 # Boba
 Something to make with your "tea".
 
