@@ -1,4 +1,4 @@
-export type Resolver<T> = (T, ...any) -> (boolean, string?)
+export type Resolver<T> = (T, any) -> (boolean, string?)
 
 export type SyncLike = {
 	sync: (SyncLike, number?) -> ...any,
