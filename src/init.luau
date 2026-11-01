@@ -82,11 +82,4 @@ function Boba.globalReplicator<C>(name: string, parent: Instance, resolver: Type
 	end
 end
 
-local net = Boba.define(script, function(any: any)
-	return true
-end)
-
-local testEvent = net.remoteEvent("TestEvent")(45, "str")
-local testFunc = net.remoteFunction("TestFunc")(54, "str")(true)
-
 return Boba
